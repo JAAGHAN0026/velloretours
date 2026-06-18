@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Booking Portal | Vellore Tours Cab, Hotel & Package Booking</title>
+    <meta name="description" content="Book taxi cabs, rooms in top hotels, and custom tour packages in Vellore. Fast online booking with instant confirmation and no advance payment.">
+    <meta name="keywords" content="book vellore hotels, vellore taxi booking, book tour packages vellore, online travel booking vellore">
+    <link rel="canonical" href="http://localhost/booking.html">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-main">VELLORE TOURS</span>
+                <span class="logo-sub">Explore Vellore – Temples, Forts, Hotels & Services</span>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">&#9776;</button>
+            <nav class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="tour-operators.html" class="nav-link">Tour Operators</a>
+                <a href="taxi-cabs.html" class="nav-link">Taxi & Cabs</a>
+                <a href="tourist-places.html" class="nav-link">Tourist Places</a>
+                <a href="atm.html" class="nav-link">ATM</a>
+                <a href="hotels.html" class="nav-link">Hotels</a>
+                <a href="restaurants.html" class="nav-link">Food & Restaurants</a>
+                <a href="booking.html" class="nav-link">Online Booking</a>
+                <a href="contact.html" class="nav-link">Contact Us</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Banner -->
+    <section class="page-banner">
+        <div class="container">
+            <h1>Online Booking Portal</h1>
+            <p>Book cabs, reserve hotel rooms, and buy custom tour packages with instant confirmation</p>
+        </div>
+    </section>
+
+    <!-- Booking Container -->
+    <section class="container">
+        <div class="booking-container">
+            <div class="booking-tabs">
+                <button class="booking-tab-btn active" onclick="switchTab('taxi')">🚖 Taxi Booking</button>
+                <button class="booking-tab-btn" onclick="switchTab('hotel')">🏨 Hotel Booking</button>
+                <button class="booking-tab-btn" onclick="switchTab('tour')">🎒 Tour Booking</button>
+            </div>
+
+            <!-- SUCCESS MESSAGE ALERT -->
+            <div id="successAlert" style="display: none; background-color: #E8F5E9; border: 1px solid #C8E6C9; color: #2E7D32; padding: 20px; border-radius: 12px; margin: 30px; text-align: center;">
+                <h3 style="margin-bottom: 8px;">🎉 Booking Submitted Successfully!</h3>
+                <p>Your request has been stored in the database. An admin agent will contact you shortly via email/phone.</p>
+            </div>
+
+            <!-- TAXI BOOKING FORM -->
+            <div id="taxiFormPanel" class="booking-form-panel active">
+                <form id="taxiForm" onsubmit="handleBookingSubmit(event, 'Taxi')">
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="taxiName">Full Name *</label>
+                            <input type="text" id="taxiName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taxiPhone">Phone Number *</label>
+                            <input type="tel" id="taxiPhone" class="form-control" pattern="[0-9]{10}" placeholder="10 Digit Mobile Number" required>
+                        </div>
+                    </div>
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="taxiEmail">Email Address *</label>
+                            <input type="email" id="taxiEmail" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taxiVehicle">Vehicle Type *</label>
+                            <select id="taxiVehicle" class="form-control" required>
+                                <option value="Hatchback (Budget)">Hatchback (Indica/WagonR) - Budget</option>
+                                <option value="Sedan (Comfort)">Sedan (Dzire/Etios) - Comfort</option>
+                                <option value="SUV (Spacious)">SUV (Ertiga/Innova) - Spacious</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="taxiPickup">Pickup Address *</label>
+                            <input type="text" id="taxiPickup" class="form-control" placeholder="Pickup location in Vellore" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taxiDrop">Drop Address *</label>
+                            <input type="text" id="taxiDrop" class="form-control" placeholder="Drop destination" required>
+                        </div>
+                    </div>
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="taxiDate">Date of Journey *</label>
+                            <input type="date" id="taxiDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taxiTime">Pickup Time *</label>
+                            <input type="time" id="taxiTime" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="taxiProvider">Select Taxi Service *</label>
+                        <select id="taxiProvider" class="form-control" required>
+                            <option value="Any Available">Any Available (Best Match)</option>
+                            <!-- Rest options populated dynamically -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 8px;">Submit Taxi Booking</button>
+                </form>
+            </div>
+
+            <!-- HOTEL BOOKING FORM -->
+            <div id="hotelFormPanel" class="booking-form-panel">
+                <form id="hotelForm" onsubmit="handleBookingSubmit(event, 'Hotel')">
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="hotelCustName">Full Name *</label>
+                            <input type="text" id="hotelCustName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hotelPhone">Phone Number *</label>
+                            <input type="tel" id="hotelPhone" class="form-control" pattern="[0-9]{10}" placeholder="10 Digit Mobile" required>
+                        </div>
+                    </div>
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="hotelEmail">Email Address *</label>
+                            <input type="email" id="hotelEmail" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hotelSelect">Select Hotel *</label>
+                            <select id="hotelSelect" class="form-control" required>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="hotelCheckin">Check-in Date *</label>
+                            <input type="date" id="hotelCheckin" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hotelCheckout">Check-out Date *</label>
+                            <input type="date" id="hotelCheckout" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="hotelGuests">Number of Guests *</label>
+                            <input type="number" id="hotelGuests" class="form-control" min="1" max="10" value="2" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="hotelRooms">Number of Rooms *</label>
+                            <input type="number" id="hotelRooms" class="form-control" min="1" max="5" value="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 8px;">Book Hotel Room</button>
+                </form>
+            </div>
+
+            <!-- TOUR BOOKING FORM -->
+            <div id="tourFormPanel" class="booking-form-panel">
+                <form id="tourForm" onsubmit="handleBookingSubmit(event, 'Tour')">
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="tourCustName">Full Name *</label>
+                            <input type="text" id="tourCustName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tourPhone">Phone Number *</label>
+                            <input type="tel" id="tourPhone" class="form-control" pattern="[0-9]{10}" placeholder="10 Digit Mobile" required>
+                        </div>
+                    </div>
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="tourEmail">Email Address *</label>
+                            <input type="email" id="tourEmail" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tourPackage">Tour Package / Destination *</label>
+                            <input type="text" id="tourPackage" class="form-control" placeholder="e.g. Golden Temple & Yelagiri Hills Package" required>
+                        </div>
+                    </div>
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="tourDate">Travel Date *</label>
+                            <input type="date" id="tourDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tourCount">Number of People *</label>
+                            <input type="number" id="tourCount" class="form-control" min="1" max="50" value="2" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tourMessage">Custom Requirements / Message</label>
+                        <textarea id="tourMessage" class="form-control form-control-textarea" placeholder="Describe any special travel requirements or itinerary queries..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 8px;">Submit Tour Package Booking</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-bar-content">
+            <div class="footer-left">
+                <span>© 2026 LiveChennai.com - All rights reserved.</span>
+                <span class="footer-designer">This portal designed, developed and maintained by <a href="https://www.jbsoftsystem.com" target="_blank" rel="noopener">JB Soft System</a></span>
+            </div>
+            <div class="footer-socials">
+                <a href="#" target="_blank" class="social-icon-btn" aria-label="Telegram">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.47 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.24-5.54 3.66-.52.36-.99.53-1.4.52-.46-.01-1.34-.26-2-.47-.8-.26-1.43-.4-1.38-.85.03-.23.35-.47.96-.71 3.76-1.64 6.27-2.72 7.54-3.25 3.59-1.48 4.34-1.74 4.83-1.75.11 0 .35.03.5.16.13.12.17.29.18.41 0 .08-.01.22-.02.26z"/></svg>
+                </a>
+                <a href="https://www.instagram.com/livechennai/?hl=en" target="_blank" class="social-icon-btn" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+                </a>
+                <a href="https://x.com/live_chennai" target="_blank" class="social-icon-btn" aria-label="X (Twitter)">
+                    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://www.facebook.com/livechennai" target="_blank" class="social-icon-btn" aria-label="Facebook">
+                    <svg viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/c/LiveChennaiTV" target="_blank" class="social-icon-btn" aria-label="YouTube">
+                    <svg viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/db.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        function switchTab(type) {
+            // Manage tabs visual active states
+            const buttons = document.querySelectorAll('.booking-tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            const panels = document.querySelectorAll('.booking-form-panel');
+            panels.forEach(p => p.classList.remove('active'));
+
+            document.getElementById('successAlert').style.display = 'none';
+
+            if (type === 'taxi') {
+                buttons[0].classList.add('active');
+                document.getElementById('taxiFormPanel').classList.add('active');
+            } else if (type === 'hotel') {
+                buttons[1].classList.add('active');
+                document.getElementById('hotelFormPanel').classList.add('active');
+            } else if (type === 'tour') {
+                buttons[2].classList.add('active');
+                document.getElementById('tourFormPanel').classList.add('active');
+            }
+        }
+
+        // Parse query params to auto-select and auto-fill forms
+        document.addEventListener('DOMContentLoaded', () => {
+            const db = window.VelloreDB;
+            
+            // Populate select options
+            const taxiProvider = document.getElementById('taxiProvider');
+            db.getAll('taxi_services').forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.name;
+                opt.innerText = `${t.name} (${t.area})`;
+                taxiProvider.appendChild(opt);
+            });
+
+            const hotelSelect = document.getElementById('hotelSelect');
+            db.getAll('hotels').forEach(h => {
+                const opt = document.createElement('option');
+                opt.value = h.name;
+                opt.innerText = `${h.name} - ₹${h.price.toLocaleString()}/night`;
+                hotelSelect.appendChild(opt);
+            });
+
+            // Parse URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const type = urlParams.get('type');
+
+            if (type === 'taxi') {
+                switchTab('taxi');
+                const service = urlParams.get('service');
+                if (service) {
+                    document.getElementById('taxiProvider').value = service;
+                }
+            } else if (type === 'hotel') {
+                switchTab('hotel');
+                const hotelName = urlParams.get('hotel');
+                if (hotelName) {
+                    document.getElementById('hotelSelect').value = hotelName;
+                }
+            } else if (type === 'tour') {
+                switchTab('tour');
+                const destination = urlParams.get('destination') || urlParams.get('package');
+                if (destination) {
+                    document.getElementById('tourPackage').value = destination;
+                }
+            }
+
+            // Set default date limits (today or tomorrow)
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('taxiDate').min = today;
+            document.getElementById('hotelCheckin').min = today;
+            document.getElementById('hotelCheckout').min = today;
+            document.getElementById('tourDate').min = today;
+        });
+
+        function handleBookingSubmit(event, bookingType) {
+            event.preventDefault();
+            const db = window.VelloreDB;
+            let details = {};
+
+            if (bookingType === 'Taxi') {
+                details = {
+                    name: document.getElementById('taxiName').value,
+                    phone: document.getElementById('taxiPhone').value,
+                    email: document.getElementById('taxiEmail').value,
+                    vehicle: document.getElementById('taxiVehicle').value,
+                    pickup: document.getElementById('taxiPickup').value,
+                    drop: document.getElementById('taxiDrop').value,
+                    date: document.getElementById('taxiDate').value,
+                    time: document.getElementById('taxiTime').value,
+                    provider: document.getElementById('taxiProvider').value
+                };
+            } else if (bookingType === 'Hotel') {
+                // Date Validation
+                const checkin = document.getElementById('hotelCheckin').value;
+                const checkout = document.getElementById('hotelCheckout').value;
+                if (new Date(checkout) <= new Date(checkin)) {
+                    alert("Check-out date must be after check-in date!");
+                    return;
+                }
+                
+                details = {
+                    name: document.getElementById('hotelCustName').value,
+                    phone: document.getElementById('hotelPhone').value,
+                    email: document.getElementById('hotelEmail').value,
+                    hotel: document.getElementById('hotelSelect').value,
+                    checkin: checkin,
+                    checkout: checkout,
+                    guests: document.getElementById('hotelGuests').value,
+                    rooms: document.getElementById('hotelRooms').value
+                };
+            } else if (bookingType === 'Tour') {
+                details = {
+                    name: document.getElementById('tourCustName').value,
+                    phone: document.getElementById('tourPhone').value,
+                    email: document.getElementById('tourEmail').value,
+                    package: document.getElementById('tourPackage').value,
+                    date: document.getElementById('tourDate').value,
+                    peopleCount: document.getElementById('tourCount').value,
+                    message: document.getElementById('tourMessage').value
+                };
+            }
+
+            // Save to LocalStorage database
+            const newBooking = {
+                type: bookingType,
+                dateAdded: new Date().toISOString().split('T')[0],
+                status: "Pending Approval",
+                ...details
+            };
+
+            db.add('bookings', newBooking);
+
+            // Display Success Alert
+            document.getElementById('successAlert').style.display = 'block';
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+
+            // Reset Form
+            event.target.reset();
+        }
+    </script>
+</body>
+</html>

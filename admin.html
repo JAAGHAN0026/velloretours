@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Vellore Tours Content Management</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-main">VELLORE TOURS ADMIN</span>
+                <span class="logo-sub">Manage Local Businesses, Landmarks & Bookings</span>
+            </a>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">View Website</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Admin Layout Container -->
+    <section class="container admin-layout">
+        <!-- Sidebar Menu -->
+        <aside class="admin-sidebar">
+            <div class="admin-menu-item active" onclick="switchSection('tour_operators')">🎒 Tour Operators</div>
+            <div class="admin-menu-item" onclick="switchSection('taxi_services')">🚖 Taxi Services</div>
+            <div class="admin-menu-item" onclick="switchSection('tourist-places')">🕌 Tourist Places</div>
+            <div class="admin-menu-item" onclick="switchSection('hotels')">🏨 Hotels</div>
+            <div class="admin-menu-item" onclick="switchSection('restaurants')">🍽️ Restaurants</div>
+            <div class="admin-menu-item" onclick="switchSection('atms')">🏦 ATMs</div>
+            <div class="admin-menu-item" onclick="switchSection('news')">📰 News & Events</div>
+            <div class="admin-menu-item" onclick="switchSection('bookings')">📅 Bookings</div>
+            <div class="admin-menu-item" onclick="switchSection('contact_messages')">✉️ Messages</div>
+        </aside>
+
+        <!-- Dynamic Content Panel -->
+        <main class="admin-content" id="adminContent">
+            <!-- Dynamic Sections will render here -->
+        </main>
+    </section>
+
+    <!-- Generic Entity Editor Modal -->
+    <div class="modal" id="editorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Add New Listing</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="editorForm" onsubmit="saveEntry(event)">
+                <input type="hidden" id="editId">
+                <div id="modalFormFields">
+                    <!-- Fields dynamically injected based on active database schema -->
+                </div>
+                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" style="border-radius: 8px; color: var(--text-dark); border-color: var(--border-color);" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="border-radius: 8px;">Save Listing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/db.js"></script>
+    <script>
+        const db = window.VelloreDB;
+        let activeSection = 'tour_operators';
+
+        // Sections configuration defining table headers and database schema
+        const SECTION_SCHEMAS = {
+            tour_operators: {
+                title: "Tour Operators",
+                fields: [
+                    { name: 'name', label: 'Agency Name', type: 'text', required: true },
+                    { name: 'rating', label: 'Rating (0.0 to 5.0)', type: 'number', step: '0.1', min: '0', max: '5', required: true },
+                    { name: 'reviews', label: 'Number of Reviews', type: 'number', required: true },
+                    { name: 'category', label: 'Category', type: 'text', default: 'Tour Operator', required: true },
+                    { name: 'address', label: 'Address Details', type: 'text', required: true },
+                    { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+                    { name: 'services', label: 'Services (comma separated)', type: 'text', required: true },
+                    { name: 'image', label: 'Image URL', type: 'url', required: true },
+                    { name: 'mapsLink', label: 'Google Maps Link', type: 'url', required: true },
+                    { name: 'website', label: 'Website Link', type: 'url' }
+                ],
+                headers: ['Name', 'Rating', 'Phone', 'Services', 'Actions']
+            },
+            taxi_services: {
+                title: "Taxi & Cab Services",
+                fields: [
+                    { name: 'name', label: 'Company Name', type: 'text', required: true },
+                    { name: 'rating', label: 'Rating (0.0 to 5.0)', type: 'number', step: '0.1', min: '0', max: '5', required: true },
+                    { name: 'reviews', label: 'Number of Reviews', type: 'number', required: true },
+                    { name: 'category', label: 'Category', type: 'text', default: 'Taxi Service', required: true },
+                    { name: 'address', label: 'Address Details', type: 'text', required: true },
+                    { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+                    { name: 'area', label: 'Service Area (e.g. Katpadi, CMC/Town Area, Sathuvachari)', type: 'text', required: true },
+                    { name: 'services', label: 'Services Offered (comma separated)', type: 'text', required: true },
+                    { name: 'image', label: 'Image URL', type: 'url', required: true },
+                    { name: 'mapsLink', label: 'Google Maps Link', type: 'url', required: true },
+                    { name: 'website', label: 'Website Link', type: 'url' }
+                ],
+                headers: ['Company Name', 'Rating', 'Area', 'Phone', 'Actions']
+            },
+            'tourist-places': {
+                title: "Tourist Attractions",
+                dbTable: "tourist_places",
+                fields: [
+                    { name: 'name', label: 'Landmark Name', type: 'text', required: true },
+                    { name: 'category', label: 'Category (Temple, Heritage, Nature, Park)', type: 'text', required: true },
+                    { name: 'rating', label: 'Rating (0.0 to 5.0)', type: 'number', step: '0.1', min: '0', max: '5', required: true },
+                    { name: 'reviews', label: 'Number of Reviews', type: 'number', required: true },
+                    { name: 'description', label: 'Description/History', type: 'textarea', required: true },
+                    { name: 'openingHours', label: 'Opening Hours', type: 'text', required: true },
+                    { name: 'image', label: 'Image URL', type: 'url', required: true },
+                    { name: 'mapsLink', label: 'Google Maps Link', type: 'url', required: true },
+                    { name: 'isPopular', label: 'Featured Landmark (Popular Attraction)', type: 'checkbox' }
+                ],
+                headers: ['Landmark Name', 'Category', 'Rating', 'Opening Hours', 'Actions']
+            },
+            hotels: {
+                title: "Hotels & Suites",
+                fields: [
+                    { name: 'name', label: 'Hotel Name', type: 'text', required: true },
+                    { name: 'rating', label: 'Rating (0.0 to 5.0)', type: 'number', step: '0.1', min: '0', max: '5', required: true },
+                    { name: 'reviews', label: 'Number of Reviews', type: 'number', required: true },
+                    { name: 'price', label: 'Starting Price (INR / night)', type: 'number', required: true },
+                    { name: 'address', label: 'Address details', type: 'text', required: true },
+                    { name: 'amenities', label: 'Amenities (comma separated)', type: 'text', required: true },
+                    { name: 'image', label: 'Image URL', type: 'url', required: true },
+                    { name: 'mapsLink', label: 'Google Maps Link', type: 'url', required: true },
+                    { name: 'website', label: 'Official Website', type: 'url' }
+                ],
+                headers: ['Hotel Name', 'Rating', 'Price', 'Address', 'Actions']
+            },
+            restaurants: {
+                title: "Restaurants & Dining",
+                fields: [
+                    { name: 'name', label: 'Restaurant Name', type: 'text', required: true },
+                    { name: 'rating', label: 'Rating (0.0 to 5.0)', type: 'number', step: '0.1', min: '0', max: '5', required: true },
+                    { name: 'reviews', label: 'Number of Reviews', type: 'number', required: true },
+                    { name: 'cuisine', label: 'Cuisine Types (comma separated)', type: 'text', required: true },
+                    { name: 'priceRange', label: 'Price Range (e.g. ₹ - Budget, ₹₹ - Medium, ₹₹₹ - Premium)', type: 'text', required: true },
+                    { name: 'address', label: 'Address details', type: 'text', required: true },
+                    { name: 'phone', label: 'Phone Number', type: 'text', required: true },
+                    { name: 'image', label: 'Image URL', type: 'url', required: true },
+                    { name: 'mapsLink', label: 'Google Maps Link', type: 'url', required: true },
+                    { name: 'website', label: 'Official Website', type: 'url' },
+                    { name: 'dineIn', label: 'Supports Dine In', type: 'checkbox', default: true },
+                    { name: 'takeaway', label: 'Supports Takeaway', type: 'checkbox', default: true },
+                    { name: 'delivery', label: 'Supports Delivery', type: 'checkbox', default: true }
+                ],
+                headers: ['Restaurant Name', 'Cuisine', 'Rating', 'Price Range', 'Actions']
+            },
+            atms: {
+                title: "ATMs Locator",
+                fields: [
+                    { name: 'name', label: 'ATM Locator Name', type: 'text', required: true },
+                    { name: 'bank', label: 'Bank Name', type: 'text', required: true },
+                    { name: 'address', label: 'ATM Location Address', type: 'text', required: true },
+                    { name: 'mapsLink', label: 'Google Maps directions URL', type: 'url', required: true }
+                ],
+                headers: ['ATM Name', 'Bank Name', 'Address', 'Actions']
+            },
+            news: {
+                title: "News & Announcements",
+                fields: [
+                    { name: 'title', label: 'News Title', type: 'text', required: true },
+                    { name: 'date', label: 'Date Published', type: 'date', required: true },
+                    { name: 'image', label: 'Featured Image URL', type: 'url', required: true },
+                    { name: 'summary', label: 'Detailed Summary text', type: 'textarea', required: true }
+                ],
+                headers: ['Publish Date', 'Title', 'Summary', 'Actions']
+            }
+        };
+
+        function switchSection(sectionName) {
+            activeSection = sectionName;
+            
+            // Mark active menu item
+            document.querySelectorAll('.admin-menu-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.innerText.includes(SECTION_SCHEMAS[sectionName] ? SECTION_SCHEMAS[sectionName].title : '')) {
+                    item.classList.add('active');
+                }
+            });
+            
+            if (sectionName === 'bookings') {
+                renderBookingsSection();
+            } else if (sectionName === 'contact_messages') {
+                renderMessagesSection();
+            } else {
+                renderStandardSection(sectionName);
+            }
+        }
+
+        function getDBTable(sectionName) {
+            return SECTION_SCHEMAS[sectionName].dbTable || sectionName;
+        }
+
+        // Standard Dynamic Section Renders
+        function renderStandardSection(sectionName) {
+            const config = SECTION_SCHEMAS[sectionName];
+            const table = getDBTable(sectionName);
+            const items = db.getAll(table);
+            const contentPanel = document.getElementById('adminContent');
+
+            contentPanel.innerHTML = `
+                <div class="admin-header-row">
+                    <h2 style="font-size: 1.5rem; font-weight: 800;">Manage ${config.title}</h2>
+                    <button class="btn btn-primary" style="padding: 8px 18px; border-radius: 6px; font-size: 0.9rem;" onclick="openAddModal('${sectionName}')">Add New Listing</button>
+                </div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                ${config.headers.map(h => `<th>${h}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.length === 0 ? `<tr><td colspan="${config.headers.length}" style="text-align: center; color: var(--text-secondary);">No listings available. Click "Add New Listing" to create one.</td></tr>` : 
+                            items.map(item => `
+                                <tr>
+                                    ${sectionName === 'tour_operators' ? `
+                                        <td style="font-weight: 600;">${item.name}</td>
+                                        <td>★ ${item.rating} (${item.reviews})</td>
+                                        <td>${item.phone}</td>
+                                        <td>${item.services.slice(0,2).join(', ')}...</td>
+                                    ` : sectionName === 'taxi_services' ? `
+                                        <td style="font-weight: 600;">${item.name}</td>
+                                        <td>★ ${item.rating}</td>
+                                        <td>${item.area}</td>
+                                        <td>${item.phone}</td>
+                                    ` : sectionName === 'tourist-places' ? `
+                                        <td style="font-weight: 600;">${item.name}</td>
+                                        <td>${item.category}</td>
+                                        <td>★ ${item.rating}</td>
+                                        <td>${item.openingHours}</td>
+                                    ` : sectionName === 'hotels' ? `
+                                        <td style="font-weight: 600;">${item.name}</td>
+                                        <td>★ ${item.rating}</td>
+                                        <td>₹${item.price.toLocaleString()}</td>
+                                        <td>${item.address.substring(0, 30)}...</td>
+                                    ` : sectionName === 'restaurants' ? `
+                                        <td style="font-weight: 600;">${item.name}</td>
+                                        <td>${item.cuisine.split(',')[0]}...</td>
+                                        <td>★ ${item.rating}</td>
+                                        <td>${item.priceRange}</td>
+                                    ` : sectionName === 'atms' ? `
+                                        <td style="font-weight: 600;">${item.name}</td>
+                                        <td>${item.bank}</td>
+                                        <td>${item.address.substring(0, 35)}...</td>
+                                    ` : sectionName === 'news' ? `
+                                        <td>${item.date}</td>
+                                        <td style="font-weight: 600;">${item.title}</td>
+                                        <td>${item.summary.substring(0, 50)}...</td>
+                                    ` : ''}
+                                    <td>
+                                        <button class="admin-btn-sm admin-btn-edit" onclick="openEditModal('${sectionName}', '${item.id}')">Edit</button>
+                                        <button class="admin-btn-sm admin-btn-delete" onclick="deleteEntry('${sectionName}', '${item.id}')">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Special Section: Bookings
+        function renderBookingsSection() {
+            const bookings = db.getAll('bookings');
+            const contentPanel = document.getElementById('adminContent');
+
+            contentPanel.innerHTML = `
+                <div class="admin-header-row">
+                    <h2 style="font-size: 1.5rem; font-weight: 800;">Manage Bookings</h2>
+                </div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Client Details</th>
+                                <th>Booking Info</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${bookings.length === 0 ? `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No customer bookings received yet.</td></tr>` : 
+                            bookings.map(bk => `
+                                <tr>
+                                    <td>${bk.dateAdded}</td>
+                                    <td><span class="service-tag" style="background-color: #E3F2FD; color: #1565C0;">${bk.type}</span></td>
+                                    <td>
+                                        <strong>${bk.name}</strong><br>
+                                        📞 ${bk.phone}<br>
+                                        ✉️ ${bk.email}
+                                    </td>
+                                    <td>
+                                        ${bk.type === 'Taxi' ? `
+                                            <strong>From:</strong> ${bk.pickup}<br>
+                                            <strong>To:</strong> ${bk.drop}<br>
+                                            <strong>Date/Time:</strong> ${bk.date} @ ${bk.time}<br>
+                                            <strong>Vehicle/Cab:</strong> ${bk.vehicle} (${bk.provider})
+                                        ` : bk.type === 'Hotel' ? `
+                                            <strong>Hotel:</strong> ${bk.hotel}<br>
+                                            <strong>Stay:</strong> ${bk.checkin} to ${bk.checkout}<br>
+                                            <strong>Rooms/Guests:</strong> ${bk.rooms} Rm(s) / ${bk.guests} Guest(s)
+                                        ` : `
+                                            <strong>Package:</strong> ${bk.package}<br>
+                                            <strong>Date:</strong> ${bk.date}<br>
+                                            <strong>Guests:</strong> ${bk.peopleCount} people<br>
+                                            <strong>Req:</strong> ${bk.message || 'None'}
+                                        `}
+                                    </td>
+                                    <td>
+                                        <select onchange="updateBookingStatus('${bk.id}', this.value)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); font-family: var(--font);">
+                                            <option value="Pending Approval" ${bk.status === 'Pending Approval' ? 'selected' : ''}>Pending</option>
+                                            <option value="Approved" ${bk.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                                            <option value="Completed" ${bk.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                            <option value="Cancelled" ${bk.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="admin-btn-sm admin-btn-delete" onclick="deleteBooking('${bk.id}')">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Special Section: Contact Messages
+        function renderMessagesSection() {
+            const messages = db.getAll('contact_messages');
+            const contentPanel = document.getElementById('adminContent');
+
+            contentPanel.innerHTML = `
+                <div class="admin-header-row">
+                    <h2 style="font-size: 1.5rem; font-weight: 800;">Contact Messages</h2>
+                </div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Sender</th>
+                                <th>Subject</th>
+                                <th>Message</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${messages.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">No customer messages received.</td></tr>` : 
+                            messages.map(msg => `
+                                <tr>
+                                    <td>${msg.dateAdded}</td>
+                                    <td>
+                                        <strong>${msg.name}</strong><br>
+                                        📞 ${msg.phone}<br>
+                                        ✉️ ${msg.email}
+                                    </td>
+                                    <td style="font-weight: 600;">${msg.subject}</td>
+                                    <td>${msg.message}</td>
+                                    <td>
+                                        <button class="admin-btn-sm admin-btn-delete" onclick="deleteMessage('${msg.id}')">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Booking status update
+        window.updateBookingStatus = function(id, status) {
+            db.update('bookings', id, { status });
+            alert("Booking status updated to: " + status);
+        }
+
+        window.deleteBooking = function(id) {
+            if (confirm("Are you sure you want to delete this booking record?")) {
+                db.delete('bookings', id);
+                renderBookingsSection();
+            }
+        }
+
+        window.deleteMessage = function(id) {
+            if (confirm("Are you sure you want to delete this message?")) {
+                db.delete('contact_messages', id);
+                renderMessagesSection();
+            }
+        }
+
+        // CRUD Modal Forms Handler
+        window.openAddModal = function(sectionName) {
+            const config = SECTION_SCHEMAS[sectionName];
+            document.getElementById('modalTitle').innerText = `Add New ${config.title}`;
+            document.getElementById('editId').value = '';
+            
+            buildModalFields(sectionName);
+            document.getElementById('editorModal').classList.add('active');
+        }
+
+        window.openEditModal = function(sectionName, id) {
+            const config = SECTION_SCHEMAS[sectionName];
+            const table = getDBTable(sectionName);
+            const entry = db.getById(table, id);
+
+            if (!entry) return;
+
+            document.getElementById('modalTitle').innerText = `Edit ${config.title}`;
+            document.getElementById('editId').value = id;
+            
+            buildModalFields(sectionName, entry);
+            document.getElementById('editorModal').classList.add('active');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('editorModal').classList.remove('active');
+        }
+
+        function buildModalFields(sectionName, data = null) {
+            const config = SECTION_SCHEMAS[sectionName];
+            const fieldsContainer = document.getElementById('modalFormFields');
+            fieldsContainer.innerHTML = '';
+
+            config.fields.forEach(f => {
+                let val = '';
+                if (data) {
+                    val = data[f.name];
+                    if (Array.isArray(val)) val = val.join(', ');
+                } else if (f.default !== undefined) {
+                    val = f.default;
+                }
+
+                const group = document.createElement('div');
+                group.className = 'form-group';
+
+                const label = document.createElement('label');
+                label.innerText = f.label;
+                group.appendChild(label);
+
+                let input;
+                if (f.type === 'textarea') {
+                    input = document.createElement('textarea');
+                    input.className = 'form-control form-control-textarea';
+                    input.value = val;
+                } else if (f.type === 'checkbox') {
+                    input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.style.width = '20px';
+                    input.style.height = '20px';
+                    input.checked = data ? !!val : !!f.default;
+                } else {
+                    input = document.createElement('input');
+                    input.type = f.type;
+                    input.className = 'form-control';
+                    input.value = val;
+                    if (f.step) input.step = f.step;
+                    if (f.min) input.min = f.min;
+                    if (f.max) input.max = f.max;
+                }
+
+                input.id = `field_${f.name}`;
+                input.name = f.name;
+                if (f.required && f.type !== 'checkbox') input.required = true;
+
+                group.appendChild(input);
+                fieldsContainer.appendChild(group);
+            });
+        }
+
+        window.saveEntry = function(event) {
+            event.preventDefault();
+            const config = SECTION_SCHEMAS[activeSection];
+            const table = getDBTable(activeSection);
+            const id = document.getElementById('editId').value;
+            const updated = {};
+
+            config.fields.forEach(f => {
+                const el = document.getElementById(`field_${f.name}`);
+                if (f.type === 'checkbox') {
+                    updated[f.name] = el.checked;
+                } else if (f.type === 'number') {
+                    updated[f.name] = parseFloat(el.value);
+                } else if (f.name === 'services' || f.name === 'amenities') {
+                    updated[f.name] = el.value.split(',').map(s => s.trim()).filter(Boolean);
+                } else {
+                    updated[f.name] = el.value;
+                }
+            });
+
+            if (id) {
+                // Update
+                db.update(table, id, updated);
+                alert("Listing updated successfully!");
+            } else {
+                // Add
+                db.add(table, {
+                    category: activeSection === 'tourist-places' ? 'Nature' : activeSection === 'tour_operators' ? 'Tour Operator' : activeSection === 'taxi_services' ? 'Taxi Service' : '',
+                    ...updated
+                });
+                alert("New listing added successfully!");
+            }
+
+            closeModal();
+            switchSection(activeSection);
+        }
+
+        window.deleteEntry = function(sectionName, id) {
+            const table = getDBTable(sectionName);
+            if (confirm("Are you sure you want to delete this listing from the database?")) {
+                db.delete(table, id);
+                switchSection(sectionName);
+            }
+        }
+
+        // Initialize view
+        document.addEventListener('DOMContentLoaded', () => {
+            switchSection('tour_operators');
+        });
+    </script>
+</body>
+</html>
